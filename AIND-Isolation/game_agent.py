@@ -268,7 +268,7 @@ class MinimaxPlayer(IsolationPlayer):
         # in case the search fails due to timeout
         player_moves = game.get_legal_moves()
         if len(player_moves) > 0:
-            best_move = player_moves[randint(0, len(player_moves) - 1)]
+            best_move = player_moves[0]
         else:
             return (-1, -1)
 
@@ -328,7 +328,7 @@ class MinimaxPlayer(IsolationPlayer):
         # get possible moves
         player_moves = game.get_legal_moves()
         if len(player_moves) > 0:
-            best_move = player_moves[randint(0, len(player_moves) - 1)]
+            best_move = player_moves[0]
         else:
             return (-1, -1)
 
@@ -422,7 +422,7 @@ class AlphaBetaPlayer(IsolationPlayer):
         # have a move ready
         player_moves = game.get_legal_moves()
         if len(player_moves) > 0:
-            best_move = player_moves[randint(0, len(player_moves) - 1)]
+            best_move = player_moves[0]
         else:
             return (-1, -1)
 
@@ -489,7 +489,7 @@ class AlphaBetaPlayer(IsolationPlayer):
         # get possible moves
         player_moves = game.get_legal_moves()
         if len(player_moves) > 0:
-            best_move = player_moves[randint(0, len(player_moves) - 1)]
+            best_move = player_moves[0]
         else:
             return (-1, -1)
 
