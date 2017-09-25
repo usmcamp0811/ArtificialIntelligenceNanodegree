@@ -114,9 +114,9 @@ def custom_score_2(game, player):
     elif percent_complete <= .10:
         aggression += 0.5
 
-    # partition_score = board_partition_score(game, player)
+    partition_score = board_partition_score(game, player)
 
-    return (n_player_moves - n_opponent_moves)
+    return partition_score
 
 def board_partition_score(game, player):
     """This method checks to see if the board has been partitioned and if
@@ -270,7 +270,7 @@ class MinimaxPlayer(IsolationPlayer):
         if len(player_moves) > 0:
             best_move = player_moves[randint(0, len(player_moves) - 1)]
         else:
-            best_move = (-1, -1)
+            return (-1, -1)
 
         try:
             # The try/except block will automatically catch the exception
@@ -330,11 +330,7 @@ class MinimaxPlayer(IsolationPlayer):
         if len(player_moves) > 0:
             best_move = player_moves[randint(0, len(player_moves) - 1)]
         else:
-            best_move = (-1, -1)
-        # check to see if moves remain
-        if not player_moves:
-            # print('no moves')
-            return (-1,-1)
+            return (-1, -1)
 
 
         best_score = float('-inf')
@@ -428,7 +424,7 @@ class AlphaBetaPlayer(IsolationPlayer):
         if len(player_moves) > 0:
             best_move = player_moves[randint(0, len(player_moves) - 1)]
         else:
-            best_move = (-1, -1)
+            return (-1, -1)
 
         try:
             depth = 1
@@ -495,10 +491,8 @@ class AlphaBetaPlayer(IsolationPlayer):
         if len(player_moves) > 0:
             best_move = player_moves[randint(0, len(player_moves) - 1)]
         else:
-            best_move = (-1, -1)
-        # check to see if moves remain
-        if not player_moves:
             return (-1, -1)
+
 
         best_score = float('-inf')
 
