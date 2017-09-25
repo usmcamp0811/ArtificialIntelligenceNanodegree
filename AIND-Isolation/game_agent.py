@@ -421,16 +421,14 @@ class AlphaBetaPlayer(IsolationPlayer):
 
         try:
             depth = 1
-            # while time_left() < self.TIMER_THRESHOLD:
-                # print('time: ', time_left)
-            best_move = self.alphabeta(game, depth)
-            depth += 1
-            # print('no timeout: ', best_move)
-            return best_move
+            while True:
+                best_move = self.alphabeta(game, depth)
+                depth   += 1
 
         except SearchTimeout:
-            # print('timeout: ', best_move)
             return best_move
+
+        return best_move
 
     def alphabeta(self, game, depth, alpha=float("-inf"), beta=float("inf")):
         """Implement depth-limited minimax search with alpha-beta pruning as
@@ -496,14 +494,14 @@ class AlphaBetaPlayer(IsolationPlayer):
             # print(current_move)
             forecast_game = game.forecast_move(current_move)
             # print('go deeper...')
-            score = max(best_score, self.min_value(forecast_game, depth, alpha, beta))
+            score = max(best_score, self.min_value(forecast_game, depth-1, alpha, beta))
             if score > best_score:
                 best_score = score
                 best_move = current_move
 
-        alpha = max(alpha, best_score)
-        if best_score >= beta:
-            return best_move
+            alpha = max(alpha, best_score)
+            if best_score >= beta:
+                return best_move
 
         return best_move
 
