@@ -3,7 +3,7 @@ test your agent's strength against a set of known agents using tournament.py
 and include the results in your report.
 """
 import random
-
+from random import randint
 
 class SearchTimeout(Exception):
     """Subclass base exception for code clarity. """
@@ -266,7 +266,11 @@ class MinimaxPlayer(IsolationPlayer):
 
         # Initialize the best move so that this function returns something
         # in case the search fails due to timeout
-        best_move = (-1, -1)
+        player_moves = game.get_legal_moves()
+        if len(player_moves) > 0:
+            best_move = player_moves[randint(0, len(player_moves) - 1)]
+        else:
+            best_move = (-1, -1)
 
         try:
             # The try/except block will automatically catch the exception
@@ -323,7 +327,10 @@ class MinimaxPlayer(IsolationPlayer):
 
         # get possible moves
         player_moves = game.get_legal_moves()
-        best_move = (-1,-1)
+        if len(player_moves) > 0:
+            best_move = player_moves[randint(0, len(player_moves) - 1)]
+        else:
+            best_move = (-1, -1)
         # check to see if moves remain
         if not player_moves:
             # print('no moves')
@@ -417,7 +424,11 @@ class AlphaBetaPlayer(IsolationPlayer):
 
         self.time_left = time_left
         # have a move ready
-        best_move = (-1, -1)
+        player_moves = game.get_legal_moves()
+        if len(player_moves) > 0:
+            best_move = player_moves[randint(0, len(player_moves) - 1)]
+        else:
+            best_move = (-1, -1)
 
         try:
             depth = 1
@@ -481,19 +492,19 @@ class AlphaBetaPlayer(IsolationPlayer):
 
         # get possible moves
         player_moves = game.get_legal_moves()
-        best_move = (-1, -1)
+        if len(player_moves) > 0:
+            best_move = player_moves[randint(0, len(player_moves) - 1)]
+        else:
+            best_move = (-1, -1)
         # check to see if moves remain
         if not player_moves:
-            # print('no moves')
             return (-1, -1)
 
         best_score = float('-inf')
 
         # step through and evaluate all possible moves at this level
         for current_move in player_moves:
-            # print(current_move)
             forecast_game = game.forecast_move(current_move)
-            # print('go deeper...')
             score = max(best_score, self.min_value(forecast_game, depth-1, alpha, beta))
             if score > best_score:
                 best_score = score
