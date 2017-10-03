@@ -4,7 +4,7 @@ and include the results in your report.
 """
 import random
 from random import randint
-import math
+from math import *
 
 
 class SearchTimeout(Exception):
@@ -12,21 +12,26 @@ class SearchTimeout(Exception):
     pass
 
 # check if p and o are on the same side of the vwall
-def same_side_check(p_location, o_location, wall, axis):
-    # 0 = left/up 1 = right/down
-    p_orientation = []
-    o_orientation = []
-    for w in wall:
-        if p_location[axis] < w:
-            p_orientation.append(0)
-        else:
-            p_orientation.append(1)
 
-        if o_location[axis] < w:
-            o_orientation.append(0)
-        else:
-            o_orientation.append(1)
-    return p_orientation == o_orientation
+def euclidean_distance(p1, p2):
+    x1, y1 = p1[0], p1[1]
+    x2, y2 = p2[0], p2[1]
+    return pow(x1-x2,2) + pow(y1-y2,2)
+
+def manhattan_distance(p1, p2):
+    x1, y1 = p1[0], p1[1]
+    x2, y2 = p2[0], p2[1]
+    return abs(x1-x2) + abs(y1-y2)
+
+def get_moves(game, loc):
+    r, c = loc
+    directions = [(-2, -1), (-2, 1), (-1, -2), (-1, 2),
+                  (1, -2), (1, 2), (2, -1), (2, 1)]
+    valid_moves = [(r + dr, c + dc) for dr, dc in directions
+                   if game.move_is_legal((r + dr, c + dc))]
+    random.shuffle(valid_moves)
+    return valid_moves
+
 
 def custom_score(game, player):
     """Calculate the heuristic value of a game state from the point of view
@@ -62,25 +67,32 @@ def custom_score(game, player):
     n_player_moves = len(game.get_legal_moves(player))
     n_opponent_moves = len(game.get_legal_moves(game.get_opponent(player)))
 
+    opponent_pos = game.get_player_location(game.get_opponent(player))
+    player_pos = game.get_player_location(player)
+
+    d_from_o = manhattan_distance(opponent_pos, player_pos)
     # make the agent more argressive as the game progresses
     percent_complete = len(game.get_blank_spaces()) / (game.height * game.width)
 
-    aggression = 1
-    if percent_complete <= 0.5:
-        aggression += 0.15
-    elif percent_complete <= .25:
-        aggression += 0.25
-    elif percent_complete <= .10:
-        aggression += 0.5
 
-    if (aggression * n_opponent_moves) == 0:
-        return n_player_moves - 1
+    aggression = 1.5
+    if percent_complete <= 0.5:
+        aggression -= 0.15
+    elif percent_complete <= .25:
+        aggression -= 0.25
+    elif percent_complete <= .10:
+        aggression -= 0.5
+
+    if n_opponent_moves == 0:
+        return float('inf')
     else:
-        return n_player_moves / (aggression * n_opponent_moves)
+        return (n_player_moves - n_opponent_moves) + (game.width/d_from_o)*aggression
 
 def custom_score_2(game, player):
-    """Calculate the heuristic value of a game state from the point of view
-    of the given player.
+    """This heuristic attempts to keep player moves closer to the center of the board
+    early on and gradually lessen this restriction as the game progresses. The idea
+    is that you want to stay near the center to keep the number of moves available
+    up as much as possible.
 
     Note: this function should be called from within a Player instance as
     `self.score()` -- you should not need to call this function directly.
@@ -107,7 +119,7 @@ def custom_score_2(game, player):
         return float("inf")
 
     n_player_moves = len(game.get_legal_moves(player))
-    n_opponent_moves = len(game.get_legal_moves(game.get_opponent(player)))
+
 
 
     # get the address of the center
@@ -126,62 +138,7 @@ def custom_score_2(game, player):
     elif percent_complete <= .10:
         aggression += 0.5
 
-    move_score = (n_player_moves - n_opponent_moves)
-    if move_score == 0:
-        move_score = 1
-    return n_player_moves + (aggression / move_score) + math.sqrt(1/center_distance)
-
-def board_partition_score(game, player):
-    """This method checks to see if the board has been partitioned and if
-    both the players are on the same side of the partition or not. Made
-    this originally without realizing the players are moving in an 'L' shape
-    so it doesn't work as well as I would like.
-    """
-    # check if the game is over
-    if game.is_loser(player):
-        return float("-inf")
-    if game.is_winner(player):
-        return float("inf")
-
-    # Check to see if the board is divided
-    # if board is split:
-    ## find out which side each player is on
-        # if players on opposite sides:
-        ##  count the number of moves... winner has most moves
-
-    p_location = game.get_player_location(player)
-    o_location = game.get_player_location(game.get_opponent(player))
-
-    blanks = game.get_blank_spaces()
-    rows, cols = zip(*blanks)
-
-    rowscount = [rows.count(x) for x in range(game.height)]
-    colscount = [cols.count(x) for x in range(game.width)]
-    if 0 in colscount:
-        vwall = [i for i, x in enumerate(colscount) if x == 0]
-        vcheck = same_side_check(p_location, o_location, vwall, 1)
-    else:
-        vwall = False
-        vcheck = True
-
-    if 0 in rowscount:
-        hwall = [i for i, x in enumerate(rowscount) if x == 0]
-        hcheck = same_side_check(p_location, o_location, hwall, 0)
-    else:
-        hwall = False
-        hcheck = True
-
-    if vcheck & hcheck == True:
-        return 1.0 # TODO: i dunno need to decided what is a good thing to return
-    else:
-        # Count the number of moves per player
-
-        n_player_moves = len(game.get_legal_moves(player))
-        n_opponent_moves = len(game.get_legal_moves(game.get_opponent(player)))
-        if n_player_moves > n_opponent_moves:
-            return n_player_moves
-        else:
-            return -n_player_moves
+    return n_player_moves + (sqrt(aggression/center_distance)*10)
 
 def custom_score_3(game, player):
     """Calculate the heuristic value of a game state from the point of view
@@ -210,18 +167,22 @@ def custom_score_3(game, player):
     if game.is_loser(player):
         return float('-inf')
 
-    # get the address of the center
-    w, h = game.width / 2., game.height / 2.
-    y, x = game.get_player_location(player)
-    center_distance = float((h - y) ** 2 + (w - x) ** 2)
+    legal_moves = game.get_legal_moves()
 
-    close_to_center = (game.width + game.height) / 2.0 - center_distance** 0.5
+    n_player_moves = len(game.get_legal_moves(player))
+    n_opponent_moves = len(game.get_legal_moves(game.get_opponent(player)))
 
+    rows, cols = zip(*legal_moves)
+    dictCompleteness = dict()
+    for i in range(game.height):
+        dictCompleteness[i] = {'X': (game.height - rows.count(i)) / game.height,
+                               'Y': (game.width - cols.count(i)) / game.width}
 
-    if center_distance == 0:
-        center_distance = 1
+    dictBlanksScores = dict()
+    for move in legal_moves:
+        dictBlanksScores[move] = dictCompleteness[move[0]]['X'] + dictCompleteness[move[1]]['Y']
 
-    return float(len(game.get_legal_moves(player))) + math.sqrt(1/center_distance)
+    return (n_player_moves-n_opponent_moves) + sum(dictBlanksScores.values())*10
 
 class IsolationPlayer:
     """Base class for minimax and alphabeta agents -- this class is never
@@ -359,7 +320,7 @@ class MinimaxPlayer(IsolationPlayer):
         if depth == 0:
             return self.score(game, self), (-1, -1)
 
-        best_move = (-1, -1)
+        best_move = player_moves[0]
         best_score = float('-inf')
 
 
